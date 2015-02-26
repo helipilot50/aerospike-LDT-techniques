@@ -1,5 +1,9 @@
 package com.aerospike.examples.ldt;
 
+import java.util.Collection;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -46,6 +50,33 @@ public class LDTMapTest {
 		subject.put("cows", 3);
 		long result = subject.get("cows");
 		Assert.assertEquals(3, result);
+	}
+
+	@Test
+	public void testEntrySet() throws Exception {
+		subject.put("cows", 3);
+		subject.put("sheep", 18);
+		subject.put("ducks", 73);
+		subject.put("mice", 36);
+		subject.put("dogs", 63);
+		subject.put("cats", 43);
+		subject.put("birds", 23);
+		Set<Entry<String, Long>> set = subject.entrySet();
+		Assert.assertEquals(7, set.size());
+		System.out.println(set);
+	}
+	@Test
+	public void testValues() throws Exception {
+		subject.put("cows", 3);
+		subject.put("sheep", 18);
+		subject.put("ducks", 73);
+		subject.put("mice", 36);
+		subject.put("dogs", 63);
+		subject.put("cats", 43);
+		subject.put("birds", 23);
+		Collection<Long> values = subject.values();
+		Assert.assertEquals(7, values.size());
+		System.out.println(values);
 	}
 
 }

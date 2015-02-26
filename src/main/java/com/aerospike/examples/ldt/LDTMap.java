@@ -1,7 +1,9 @@
 package com.aerospike.examples.ldt;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,24 +35,24 @@ public class LDTMap<K,V> implements Map<K,V>{
 		return llist;
 	}
 	
-	
-	/**
-	 * the current size of the Large Map
-	 */
 	@Override
 	public int size() {
 		return Utils.size(getList());
 	}
+	
 	@Override
 	public boolean isEmpty() {
 		return getList().size() == 0;
 	}
+	
 	@Override
 	public boolean containsKey(Object key) {
 		return getList().find(Utils.makeKeyAsValue(key)) != null;
 	}
+	
 	@Override
 	public boolean containsValue(Object value) {
+		
 		//TODO
 		return false;
 	}
@@ -59,11 +61,13 @@ public class LDTMap<K,V> implements Map<K,V>{
 	public V get(Object key) {
 		return (V) Utils.findElement(getList(), Utils.makeKeyAsValue(key));
 	}
+	
 	@Override
 	public V put(Object key, Object value) {
 		getList().update(Utils.makeValue(key, value));
 		return null;
 	}
+	
 	@Override
 	public V remove(Object key) {
 		@SuppressWarnings("unchecked")
@@ -71,33 +75,60 @@ public class LDTMap<K,V> implements Map<K,V>{
 		getList().remove(Value.get(key));
 		return value;
 	}
+	
 	@Override
 	public void clear() {
 		getList().destroy();
 	}
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Set<K> keySet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public void putAll(Map m) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Collection values() {
-		// TODO Auto-generated method stub
-		return null;
+		/*
+		 * Large result will blow up your heap space
+		 */
+		Set<K> ks = new HashSet<K>();
+		List<Map.Entry<K, V>> result = (List<java.util.Map.Entry<K, V>>) getList().scan();
+        for (Map.Entry<? extends K, ? extends V> e : result) {
+            K key = e.getKey();
+            ks.add(key);
+        }
+        return ks;
 	}
 
 	@Override
-	public Set entrySet() {
-		// TODO Auto-generated method stub
-		return null;
+	public void putAll(Map<? extends K, ? extends V> m) {
+        for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
+            K key = e.getKey();
+            V value = e.getValue();
+            put(key, value);
+        }
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<V> values() {
+		/*
+		 * Large result will blow up your heap space
+		 */
+		List<Map<K, V>> result = (List<Map<K, V>>) getList().scan();
+		List<V> values = new ArrayList<V>();
+		for (Map<K, V> e : result) {
+			V value = e.get(Utils.LDT_VALUE);
+			values.add(value);
+		}
+		result.clear();
+		return values;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Map.Entry<K, V>> entrySet() {
+		/*
+		 * Large result will blow up your heap space
+		 */
+		List<Map.Entry<K, V>> result = (List<java.util.Map.Entry<K, V>>) getList().scan();
+		return new HashSet<Map.Entry<K, V>>(result);
 	}
 
 }
