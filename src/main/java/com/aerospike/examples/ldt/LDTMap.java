@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
@@ -25,7 +23,6 @@ public class LDTMap<K,V> implements Map<K,V>{
 	LargeList llist;
 	private String binName;
 
-	private static Logger log = Logger.getLogger(LDTMap.class);
 	public LDTMap(AerospikeClient client, Key key, String binName) throws AerospikeException {
 		this.client = client;
 		this.key = key;
@@ -38,8 +35,8 @@ public class LDTMap<K,V> implements Map<K,V>{
 		return llist;
 	}
 	
-	private Map<Object, Object> makeMap(Object key, Object value){
-		Map<Object, Object> map = new HashMap<Object, Object>();
+	private Map<String, Object> makeMap(Object key, Object value){
+		Map<String, Object> map = new HashMap<String, Object>();
 		map.put(LDT_KEY, key);
 		map.put(LDT_VALUE, value);
 		return map;
@@ -58,17 +55,17 @@ public class LDTMap<K,V> implements Map<K,V>{
 	}
 	@Override
 	public boolean containsKey(Object key) {
-		// TODO Auto-generated method stub
-		return false;
+		return getList().find(Value.get(key)) != null;
 	}
 	@Override
 	public boolean containsValue(Object value) {
-		// TODO Auto-generated method stub
+		//TODO
 		return false;
 	}
+	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key) {
-		Map map = (Map) getList().find(Value.get(key));
+		Map<String, Object> map = (Map<String, Object>) getList().find(Value.get(key));
 		if (map != null)
 			return (V) map.get(LDT_VALUE);
 		else 
@@ -76,13 +73,15 @@ public class LDTMap<K,V> implements Map<K,V>{
 	}
 	@Override
 	public V put(Object key, Object value) {
-		getList().add(Value.getAsMap(makeMap(key, value)));
+		getList().update(Value.getAsMap(makeMap(key, value)));
 		return null;
 	}
 	@Override
 	public V remove(Object key) {
+		@SuppressWarnings("unchecked")
+		V value = (V) getList().find(Value.get(key));
 		getList().remove(Value.get(key));
-		return null;
+		return value;
 	}
 	@Override
 	public void clear() {

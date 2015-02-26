@@ -19,6 +19,7 @@ public class LDTMapTest {
 	public void setUp() throws Exception {
 		client = new AerospikeClient("localhost", 3000);
 		key = new Key("test", "demo", "the-map-001");
+		client.delete(null, key);
 		subject = new LDTMap<String, Integer>(client, key, "the-map");
 	}
 

@@ -6,7 +6,7 @@
 yada yada yada
 
 The source code for this solution is available on GitHub, and the README.md 
-http://github.com/some place. 
+https://github.com/helipilot50/aerospike-LDT-techniques.git 
 
 
 ##Discussion

@@ -17,8 +17,9 @@ public class LDTStackTest {
 	@Before
 	public void setUp() throws Exception {
 		client = new AerospikeClient("localhost", 3000);
-		key = new Key("test", "demo", "the-map-001");
-		subject = new LDTStack<String>(client, key, "the-map");
+		key = new Key("test", "demo", "the-stack-001");
+		client.delete(null, key);
+		subject = new LDTStack<String>(client, key, "the-stack");
 	}
 
 	@After
@@ -39,6 +40,15 @@ public class LDTStackTest {
 		Assert.assertEquals(7, size);
 	}
 	
+	@Test
+	public void testPeek() throws Exception {
+		subject.push("cows");
+		subject.push("sheep");
+		subject.push("ducks");
+		String value = subject.peek();
+		Assert.assertEquals("ducks", value);
+	}
+
 	@Test
 	public void testPop() throws Exception {
 		subject.push("cows");

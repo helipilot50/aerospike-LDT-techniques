@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Queue;
 
 import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.large.LargeList;
 
 public class LDTQueue<E> implements Queue<E>{
@@ -40,6 +40,25 @@ public class LDTQueue<E> implements Queue<E>{
 		map.put(LDT_VALUE, value);
 		return map;
 	}
+	
+	private long getTop(){
+		long top = 0;
+		Record record = this.client.get(null, this.key, QUEUE_TOP);
+		if (record != null){
+			top = record.getLong(QUEUE_TOP);
+		}
+		return top;
+	}
+
+	private long getTail(){
+		long tail = 0;
+		Record record = this.client.get(null, this.key, QUEUE_TAIL);
+		if (record != null){
+			tail = record.getLong(QUEUE_TOP);
+		}
+		return tail;
+	}
+
 	@Override
 	public int size() {
 		return getList().size();
