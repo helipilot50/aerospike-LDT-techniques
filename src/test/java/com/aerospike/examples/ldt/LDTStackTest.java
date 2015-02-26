@@ -72,6 +72,9 @@ public class LDTStackTest {
 		subject.clear();
 		size = subject.size();
 		Assert.assertEquals(0, size);
+		subject.push("birds");
+		size = subject.size();
+		Assert.assertEquals(1, size);
 		
 	}
 

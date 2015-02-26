@@ -16,8 +16,6 @@ import com.aerospike.client.large.LargeList;
 @author Peter Milne
 */
 public class LDTMap<K,V> implements Map<K,V>{
-	private static final String LDT_KEY = "key";
-	private static final String LDT_VALUE = "value";
 	private AerospikeClient client;
 	private Key key;
 	LargeList llist;
@@ -35,19 +33,13 @@ public class LDTMap<K,V> implements Map<K,V>{
 		return llist;
 	}
 	
-	private Map<String, Object> makeMap(Object key, Object value){
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put(LDT_KEY, key);
-		map.put(LDT_VALUE, value);
-		return map;
-	}
 	
 	/**
 	 * the current size of the Large Map
 	 */
 	@Override
 	public int size() {
-		return getList().size();
+		return Utils.size(getList());
 	}
 	@Override
 	public boolean isEmpty() {
@@ -55,7 +47,7 @@ public class LDTMap<K,V> implements Map<K,V>{
 	}
 	@Override
 	public boolean containsKey(Object key) {
-		return getList().find(Value.get(key)) != null;
+		return getList().find(Utils.makeKeyAsValue(key)) != null;
 	}
 	@Override
 	public boolean containsValue(Object value) {
@@ -65,15 +57,11 @@ public class LDTMap<K,V> implements Map<K,V>{
 	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key) {
-		Map<String, Object> map = (Map<String, Object>) getList().find(Value.get(key));
-		if (map != null)
-			return (V) map.get(LDT_VALUE);
-		else 
-			return null;
+		return (V) Utils.findElement(getList(), Utils.makeKeyAsValue(key));
 	}
 	@Override
 	public V put(Object key, Object value) {
-		getList().update(Value.getAsMap(makeMap(key, value)));
+		getList().update(Utils.makeValue(key, value));
 		return null;
 	}
 	@Override

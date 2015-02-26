@@ -13,14 +13,14 @@ public class LDTMapTest {
 
 	AerospikeClient client;
 	Key key;
-	LDTMap<String, Integer> subject;
+	LDTMap<String, Long> subject;
 
 	@Before
 	public void setUp() throws Exception {
 		client = new AerospikeClient("localhost", 3000);
 		key = new Key("test", "demo", "the-map-001");
 		client.delete(null, key);
-		subject = new LDTMap<String, Integer>(client, key, "the-map");
+		subject = new LDTMap<String, Long>(client, key, "the-map");
 	}
 
 	@After
@@ -44,7 +44,7 @@ public class LDTMapTest {
 	@Test
 	public void testGet() throws Exception {
 		subject.put("cows", 3);
-		int result = subject.get("cows");
+		long result = subject.get("cows");
 		Assert.assertEquals(3, result);
 	}
 

@@ -18,6 +18,7 @@ public class LDTQueueTest {
 	public void setUp() throws Exception {
 		client = new AerospikeClient("localhost", 3000);
 		key = new Key("test", "demo", "the-queue-001");
+		client.delete(null, key);
 		subject = new LDTQueue<String>(client, key, "the-queue");
 	}
 
@@ -38,6 +39,63 @@ public class LDTQueueTest {
 		int size = subject.size();
 		Assert.assertEquals(7, size);
 	}
-	
+	@Test
+	public void testEmpty() throws Exception {
+		subject.add("cows");
+		subject.add("sheep");
+		subject.add("ducks");
+		subject.add("mice");
+		subject.add("dogs");
+		subject.add("cats");
+		subject.add("birds");
+		subject.clear();
+		boolean nothing = subject.isEmpty();
+		Assert.assertTrue(nothing);
+		subject.add("birds");
+		nothing = subject.isEmpty();
+		Assert.assertFalse(nothing);
+	}
+	@Test
+	public void testClear() throws Exception {
+		subject.add("cows");
+		subject.add("sheep");
+		subject.add("ducks");
+		subject.add("mice");
+		subject.add("dogs");
+		subject.add("cats");
+		subject.add("birds");
+		subject.clear();
+		int size = subject.size();
+		Assert.assertEquals(0, size);
+		subject.add("birds");
+		size = subject.size();
+		Assert.assertEquals(1, size);
+	}
+	@Test
+	public void testRemove() throws Exception {
+		subject.add("cows");
+		subject.add("sheep");
+		subject.add("ducks");
+		subject.add("mice");
+		subject.add("dogs");
+		subject.add("cats");
+		subject.add("birds");
+		int size = subject.size();
+		Assert.assertEquals(7, size);
+		String animal = subject.remove();
+		Assert.assertEquals("cows", animal);
+		size = subject.size();
+		Assert.assertEquals(6, size);
+		animal = subject.remove();
+		Assert.assertEquals("sheep", animal);
+		size = subject.size();
+		Assert.assertEquals(5, size);
+		animal = subject.remove();
+		Assert.assertEquals("ducks", animal);
+		size = subject.size();
+		Assert.assertEquals(4, size);
+		
+	}
+
 
 }

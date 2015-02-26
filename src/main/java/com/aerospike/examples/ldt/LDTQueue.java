@@ -1,22 +1,19 @@
 package com.aerospike.examples.ldt;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Queue;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
+import com.aerospike.client.Operation;
 import com.aerospike.client.Record;
+import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 
 public class LDTQueue<E> implements Queue<E>{
 
-	private static final String LDT_KEY = "key";
-	private static final String LDT_VALUE = "value";
-	private static final String QUEUE_TOP = "queue-top";
-	private static final String QUEUE_TAIL = "queue-tail";
 	private AerospikeClient client;
 	private Key key;
 	LargeList llist;
@@ -29,44 +26,46 @@ public class LDTQueue<E> implements Queue<E>{
 	}
 	
 	private LargeList getList(){
-		if (llist == null)
+		if (llist == null){
 			llist = this.client.getLargeList(null, key, binName, null);
+			this.client.put(null, this.key, new Bin(Utils.LDT_TOP, 1));
+		}
 		return llist;
 	}
 	
-	private Map<String, Object> makeMap(int key, E value){
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put(LDT_KEY, key);
-		map.put(LDT_VALUE, value);
-		return map;
-	}
 	
+	private long getTail(){
+		long tail = 0;
+		Record record = this.client.get(null, this.key, Utils.LDT_TAIL);
+		if (record != null){
+			tail = record.getLong(Utils.LDT_TAIL);
+		}
+		return tail;
+	}
+	private long getNextTail(){
+		Record record = this.client.operate(null, this.key, 
+				Operation.add(new Bin(Utils.LDT_TAIL, 1)),
+				Operation.get(Utils.LDT_TAIL));
+		return record.getLong(Utils.LDT_TAIL);
+	}
+
 	private long getTop(){
 		long top = 0;
-		Record record = this.client.get(null, this.key, QUEUE_TOP);
+		Record record = this.client.get(null, this.key, Utils.LDT_TOP);
 		if (record != null){
-			top = record.getLong(QUEUE_TOP);
+			top = record.getLong(Utils.LDT_TOP);
 		}
 		return top;
 	}
 
-	private long getTail(){
-		long tail = 0;
-		Record record = this.client.get(null, this.key, QUEUE_TAIL);
-		if (record != null){
-			tail = record.getLong(QUEUE_TOP);
-		}
-		return tail;
-	}
-
 	@Override
 	public int size() {
-		return getList().size();
+		return Utils.size(getList());
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return (getList().size() == 0);
+		return (size() == 0);
 	}
 
 	@Override
@@ -130,7 +129,8 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public boolean add(E e) {
-		// TODO Auto-generated method stub
+		long tail = getNextTail();
+		getList().add(Utils.makeValue(tail, e));
 		return false;
 	}
 
@@ -140,10 +140,17 @@ public class LDTQueue<E> implements Queue<E>{
 		return false;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public E remove() {
-		// TODO Auto-generated method stub
-		return null;
+		long top = getTop();
+		if (top == 0)
+			return null;
+		Value topValue = Utils.makeKeyAsValue(top);
+		E tailElement = (E) Utils.findElement(getList(), topValue);
+		getList().remove(topValue);
+		this.client.add(null, this.key, new Bin(Utils.LDT_TOP, 1));
+		return tailElement;
 	}
 
 	@Override
