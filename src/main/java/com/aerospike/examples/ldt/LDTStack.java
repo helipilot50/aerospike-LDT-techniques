@@ -11,6 +11,7 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
 import com.aerospike.client.Operation;
 import com.aerospike.client.Record;
+import com.aerospike.client.ResultCode;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 
@@ -29,18 +30,28 @@ public class LDTStack<E> extends Stack<E> {
 		this.key = key;
 		this.binName = binName;
 	}
-	
+
 	private LargeList getList(){
 		if (llist == null)
 			llist = this.client.getLargeList(null, key, binName, null);
 		return llist;
 	}
-	
-	private Map<String, Object> makeMap(long key, E value){
+
+	private Map<String, Object> makeValueMap(long key, E value){
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put(LDT_KEY, key);
 		map.put(LDT_VALUE, value);
 		return map;
+	}
+
+	private Map<String, Long> makeKeyMap(long key){
+		Map<String, Long> map = new HashMap<String, Long>();
+		map.put(LDT_KEY, key);
+		return map;
+	}
+
+	private Value makeKeyAsValue(long key){
+		return Value.getAsMap(makeKeyMap(key));
 	}
 
 	private long getTop(){
@@ -53,7 +64,7 @@ public class LDTStack<E> extends Stack<E> {
 		}
 		return top;
 	}
-	
+
 	private long getNextTop(){
 		Record record = this.client.operate(null, this.key, 
 				Operation.add(new Bin(STACK_TOP, 1)),
@@ -64,39 +75,55 @@ public class LDTStack<E> extends Stack<E> {
 	@Override
 	public synchronized E push(E item) {
 		long top = getNextTop();
-		Map<String, Object> map = makeMap(top, item);
+		Map<String, Object> map = makeValueMap(top, item);
 		getList().add(Value.getAsMap(map));
 		return item;
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	@Override
 	public synchronized E pop() {
-		long top = getTop();
-		E topElement = (E) getList().find(Value.get(top));
-		getList().remove(Value.get(top));
+		Value top = makeKeyAsValue(getTop());
+		E topElement = findElement(top);
+		getList().remove(top);
 		return topElement;
 	}
-	
+
 	@Override
 	public synchronized int size() {
-		return getList().size();
+		int size = 0;
+		try {
+			size = getList().size();
+		} catch (AerospikeException e){
+			if (e.getResultCode() != 1417) // LDT-Bin Does Not Exist
+				throw e;
+		}
+		return size;
 	}
-	
+
 	@Override
 	public void clear() {
 		getList().destroy();
+		getList();
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	@Override
 	public synchronized E peek() {
 		long top = getTop();
-		List<E> list = (List<E>) getList().find(Value.get(top));
-		E topElement = list.get(0);
-		return topElement;
+		return findElement(top);
 	}
-	
+
+	private E findElement(long key){
+		return findElement(makeKeyAsValue(key));
+
+	}
+	@SuppressWarnings("unchecked")
+	private E findElement(Value key){
+		List<Map<String, ?>> list = (List<Map<String, ?>>) getList().find(key);
+		E element = (E) ((Map<String, ?>)list.get(0)).get(LDT_VALUE);
+		return element;
+
+	}
+
 	@Override
 	public synchronized int search(Object o) {
 		// TODO Auto-generated method stub

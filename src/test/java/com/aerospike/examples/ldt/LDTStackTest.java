@@ -57,5 +57,22 @@ public class LDTStackTest {
 		String value = subject.pop();
 		Assert.assertEquals("ducks", value);
 	}
+	
+	@Test
+	public void testClear() throws Exception {
+		subject.push("cows");
+		subject.push("sheep");
+		subject.push("ducks");
+		subject.push("mice");
+		subject.push("dogs");
+		subject.push("cats");
+		subject.push("birds");
+		int size = subject.size();
+		Assert.assertEquals(7, size);
+		subject.clear();
+		size = subject.size();
+		Assert.assertEquals(0, size);
+		
+	}
 
 }
