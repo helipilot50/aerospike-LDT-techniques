@@ -53,7 +53,9 @@ public class Utils {
 
 	public static Object findElement(LargeList llist, Value key){
 		List<Map<String, Object>> list = (List<Map<String, Object>>) llist.find(key);
-		Object element = ((Map<String, ?>)list.get(0)).get(Utils.LDT_VALUE);
+		Object element = null;
+		if (list != null && list.size() > 0)
+			element = ((Map<String, ?>)list.get(0)).get(Utils.LDT_VALUE);
 		return element;
 
 	}

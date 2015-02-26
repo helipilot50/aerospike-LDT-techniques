@@ -1,5 +1,7 @@
 package com.aerospike.examples.ldt;
 
+import java.util.NoSuchElementException;
+
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -71,7 +73,7 @@ public class LDTQueueTest {
 		size = subject.size();
 		Assert.assertEquals(1, size);
 	}
-	@Test
+	@Test(expected=NoSuchElementException.class)
 	public void testRemove() throws Exception {
 		subject.add("cows");
 		subject.add("sheep");
@@ -94,7 +96,97 @@ public class LDTQueueTest {
 		Assert.assertEquals("ducks", animal);
 		size = subject.size();
 		Assert.assertEquals(4, size);
-		
+		animal = subject.remove();
+		Assert.assertEquals("mice", animal);
+		size = subject.size();
+		Assert.assertEquals(3, size);
+		animal = subject.remove();
+		Assert.assertEquals("dogs", animal);
+		size = subject.size();
+		Assert.assertEquals(2, size);
+		animal = subject.remove();
+		Assert.assertEquals("cats", animal);
+		size = subject.size();
+		Assert.assertEquals(1, size);
+		animal = subject.remove();
+		Assert.assertEquals("birds", animal);
+		size = subject.size();
+		Assert.assertEquals(0, size);
+		animal = subject.remove();
+	}
+
+	@Test
+	public void testPoll() throws Exception {
+		subject.add("cows");
+		subject.add("sheep");
+		subject.add("ducks");
+		subject.add("mice");
+		subject.add("dogs");
+		subject.add("cats");
+		subject.add("birds");
+		int size = subject.size();
+		Assert.assertEquals(7, size);
+		String animal = subject.poll();
+		Assert.assertEquals("cows", animal);
+		size = subject.size();
+		Assert.assertEquals(6, size);
+		animal = subject.poll();
+		Assert.assertEquals("sheep", animal);
+		size = subject.size();
+		Assert.assertEquals(5, size);
+		animal = subject.poll();
+		Assert.assertEquals("ducks", animal);
+		size = subject.size();
+		Assert.assertEquals(4, size);
+		animal = subject.poll();
+		Assert.assertEquals("mice", animal);
+		size = subject.size();
+		Assert.assertEquals(3, size);
+		animal = subject.poll();
+		Assert.assertEquals("dogs", animal);
+		size = subject.size();
+		Assert.assertEquals(2, size);
+		animal = subject.poll();
+		Assert.assertEquals("cats", animal);
+		size = subject.size();
+		Assert.assertEquals(1, size);
+		animal = subject.poll();
+		Assert.assertEquals("birds", animal);
+		size = subject.size();
+		Assert.assertEquals(0, size);
+		animal = subject.poll();
+		Assert.assertEquals(null, animal);
+	}
+	@Test
+	public void testPeek() throws Exception {
+		subject.add("cows");
+		subject.add("sheep");
+		subject.add("ducks");
+		subject.add("mice");
+		subject.add("dogs");
+		subject.add("cats");
+		subject.add("birds");
+		int size = subject.size();
+		Assert.assertEquals(7, size);
+		String animal = subject.peek();
+		Assert.assertEquals("cows", animal);
+		size = subject.size();
+		Assert.assertEquals(7, size);
+	}
+
+	@Test
+	public void testToArray() throws Exception {
+		subject.add("cows");
+		subject.add("sheep");
+		subject.add("ducks");
+		subject.add("mice");
+		subject.add("dogs");
+		subject.add("cats");
+		subject.add("birds");
+		int size = subject.size();
+		Assert.assertEquals(7, size);
+		Object[] animals = subject.toArray();
+		Assert.assertEquals(7, animals.length);
 	}
 
 

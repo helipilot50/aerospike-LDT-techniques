@@ -2,6 +2,8 @@ package com.aerospike.examples.ldt;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 import com.aerospike.client.AerospikeClient;
@@ -82,14 +84,14 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public Object[] toArray() {
-		// TODO Auto-generated method stub
-		return null;
+		List<Object> scanResilt = (List<Object>) getList().scan();
+		return scanResilt.toArray();
 	}
 
 	@Override
 	public <T> T[] toArray(T[] a) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Object> scanResilt = (List<Object>) getList().scan();
+		return scanResilt.toArray(a);
 	}
 
 	@Override
@@ -131,44 +133,58 @@ public class LDTQueue<E> implements Queue<E>{
 	public boolean add(E e) {
 		long tail = getNextTail();
 		getList().add(Utils.makeValue(tail, e));
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean offer(E e) {
-		// TODO Auto-generated method stub
-		return false;
+		return add(e);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public E remove() {
 		long top = getTop();
-		if (top == 0)
-			return null;
-		Value topValue = Utils.makeKeyAsValue(top);
-		E tailElement = (E) Utils.findElement(getList(), topValue);
-		getList().remove(topValue);
-		this.client.add(null, this.key, new Bin(Utils.LDT_TOP, 1));
-		return tailElement;
+		E topElement = element(top, true);
+		if (topElement == null)
+			throw new NoSuchElementException();
+		return topElement;
 	}
 
 	@Override
 	public E poll() {
-		// TODO Auto-generated method stub
-		return null;
+		long top = getTop();
+		E topElement = element(top, true);
+		return topElement;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private E element(long top, boolean remove){
+		if (top == 0)
+			return null;
+		Value topValue = Utils.makeKeyAsValue(top);
+		E topElement = (E) Utils.findElement(getList(), topValue);
+		if (topElement != null && remove){
+			getList().remove(Utils.makeKeyAsValue(top));
+			this.client.add(null, this.key, new Bin(Utils.LDT_TOP, 1));
+		}
+		return topElement;
+		
 	}
 
 	@Override
 	public E element() {
-		// TODO Auto-generated method stub
-		return null;
+		long top = getTop();
+		E topElement = element(top, false);
+		if (topElement == null)
+			throw new NoSuchElementException();
+		return topElement;
 	}
 
 	@Override
 	public E peek() {
-		// TODO Auto-generated method stub
-		return null;
+		long top = getTop();
+		E topElement = element(top, false);
+		return topElement;
 	}
 
 }
