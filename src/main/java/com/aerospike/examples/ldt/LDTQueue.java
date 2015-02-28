@@ -9,13 +9,12 @@ import java.util.Queue;
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
-import com.aerospike.client.Operation;
-import com.aerospike.client.Record;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 
 public class LDTQueue<E> implements Queue<E>{
 
+	private static final String QUEUE_MODULE = "queue";
 	private AerospikeClient client;
 	private Key key;
 	LargeList llist;
@@ -35,33 +34,9 @@ public class LDTQueue<E> implements Queue<E>{
 		return llist;
 	}
 	
-	private long getTail(){
-		long tail = 0;
-		Record record = this.client.get(null, this.key, Utils.LDT_TAIL);
-		if (record != null){
-			tail = record.getLong(Utils.LDT_TAIL);
-		}
-		return tail;
-	}
-	private long getNextTail(){
-		Record record = this.client.operate(null, this.key, 
-				Operation.add(new Bin(Utils.LDT_TAIL, 1)),
-				Operation.get(Utils.LDT_TAIL));
-		return record.getLong(Utils.LDT_TAIL);
-	}
-
-	private long getTop(){
-		long top = 0;
-		Record record = this.client.get(null, this.key, Utils.LDT_TOP);
-		if (record != null){
-			top = record.getLong(Utils.LDT_TOP);
-		}
-		return top;
-	}
-
 	@Override
 	public int size() {
-		Long listSize = (long) client.execute(null, this.key, "queue", "size", Value.get(this.binName));
+		Long listSize = (long) client.execute(null, this.key, QUEUE_MODULE, "size", Value.get(this.binName));
 		return listSize.intValue();
 	}
 
@@ -126,12 +101,12 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public void clear() {
-		client.execute(null, this.key, "queue", "clear", Value.get(this.binName));
+		client.execute(null, this.key, QUEUE_MODULE, "clear", Value.get(this.binName));
 	}
 
 	@Override
 	public boolean add(E e) {
-		client.execute(null, this.key, "queue", "add", Value.get(this.binName), Value.get(e));
+		client.execute(null, this.key, QUEUE_MODULE, "add", Value.get(this.binName), Value.get(e));
 		return true;
 	}
 
@@ -142,7 +117,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E remove() {
-		E topElement = (E) client.execute(null, this.key, "queue", "remove", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, QUEUE_MODULE, "remove", Value.get(this.binName));
 		if (topElement == null)
 			throw new NoSuchElementException();
 		return topElement;
@@ -150,7 +125,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E poll() {
-		E topElement = (E) client.execute(null, this.key, "queue", "remove", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, QUEUE_MODULE, "remove", Value.get(this.binName));
 		return topElement;
 	}
 	
@@ -170,7 +145,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E element() {
-		E topElement = (E) client.execute(null, this.key, "queue", "peek", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, QUEUE_MODULE, "peek", Value.get(this.binName));
 		if (topElement == null)
 			throw new NoSuchElementException();
 		return topElement;
@@ -178,7 +153,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E peek() {
-		E topElement = (E) client.execute(null, this.key, "queue", "peek", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, QUEUE_MODULE, "peek", Value.get(this.binName));
 		return topElement;
 
 	}

@@ -25,12 +25,6 @@
 		</developer>
 	</developers>
 	<dependencies>
-		<!-- Aerospike client. -->
-		<dependency>
-			<groupId>com.aerospike</groupId>
-			<artifactId>aerospike-client</artifactId>
-			<version>[3.0.35,)</version>
-		</dependency>
 		<!-- Apache command line parser. -->
 		<dependency>
 			<groupId>commons-cli</groupId>
@@ -53,6 +47,12 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.4</version>
+		</dependency>
+		<!-- Aerospike client. -->
+		<dependency>
+			<groupId>com.aerospike</groupId>
+			<artifactId>aerospike-client</artifactId>
+			<version>[3.0.34,)</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -97,6 +97,12 @@
 				<directory>${project.basedir}/src/main/java</directory>
 				<includes>
 					<include>**/*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${project.basedir}/udf</directory>
+				<includes>
+					<include>**/*.lua</include>
 				</includes>
 			</resource>
 		</resources>
