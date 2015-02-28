@@ -10,6 +10,8 @@ local function next(rec, counter)
   local currentValue = rec[counter] or 0
   local nextValue = currentValue + 1
   rec[counter] = nextValue
+  info("Next "..tostring(counter).." value "..tostring(rec[counter]))
+  aerospike:update(rec)
   return nextValue
 end
 
@@ -27,32 +29,41 @@ local function makeKeyMap(key)
 end
 
 local function find(rec, bin, key)
+  --info("Find Bin "..tostring(bin))
   local keyMap = makeKeyMap(key)
   local result = llist.find(rec, bin, keyMap)
   local firstElement = result[1]
-  info(tostring(firstElement))
   return firstElement[LDT_VALUE]
 end
 
 function add(rec, bin, item)
+  local top = rec[LDT_TOP] or 0
+  if top == 0 then
+    next(rec, LDT_TOP)
+  end
   local tail = next(rec, LDT_TAIL)
   local value = makeMap(tail, item)
   llist.add(rec, bin, value)
-  aerospike:update(rec)
 end
 
 function remove(rec, bin)
   local top = rec[LDT_TOP] or 0
+  if top == 0 then
+    return nil
+  end
+  --info("Top "..tostring(top))
   local result = find(rec, bin, top)
-  llist.remove(makeKeyMap(top))
+  llist.remove(rec, bin, makeKeyMap(top))
   next(rec, LDT_TOP)
-  aerospike:update(rec)
   return result
 end
 
 function peek(rec, bin)
   local top = rec[LDT_TOP] or 0
-  local result = find(rec, bin, top-1)
+  if top == 0 then
+    return nil
+  end
+  local result = find(rec, bin, top)
   return result
 end
 

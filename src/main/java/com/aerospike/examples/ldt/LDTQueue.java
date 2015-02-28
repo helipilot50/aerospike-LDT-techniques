@@ -61,9 +61,8 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public int size() {
-//		Long listSize = (long) client.execute(null, this.key, "queue", "size", Value.get(this.binName));
-//		return listSize.intValue();
-		return Utils.size(getList());
+		Long listSize = (long) client.execute(null, this.key, "queue", "size", Value.get(this.binName));
+		return listSize.intValue();
 	}
 
 	@Override
@@ -127,15 +126,12 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public void clear() {
-//		client.execute(null, this.key, "queue", "clear", Value.get(this.binName));
-		getList().destroy();
+		client.execute(null, this.key, "queue", "clear", Value.get(this.binName));
 	}
 
 	@Override
 	public boolean add(E e) {
-		long tail = getNextTail();
-		getList().add(Utils.makeValue(tail, e));
-//		client.execute(null, this.key, "queue", "add", Value.get(this.binName), Value.get(e));
+		client.execute(null, this.key, "queue", "add", Value.get(this.binName), Value.get(e));
 		return true;
 	}
 
@@ -146,9 +142,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E remove() {
-		long top = getTop();
-		E topElement = element(top, true);
-//		E topElement = (E) client.execute(null, this.key, "queue", "remove", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, "queue", "remove", Value.get(this.binName));
 		if (topElement == null)
 			throw new NoSuchElementException();
 		return topElement;
@@ -156,9 +150,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E poll() {
-		long top = getTop();
-		E topElement = element(top, true);
-//		E topElement = (E) client.execute(null, this.key, "queue", "remove", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, "queue", "remove", Value.get(this.binName));
 		return topElement;
 	}
 	
@@ -178,9 +170,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E element() {
-		long top = getTop();
-		E topElement = element(top, false);
-//		E topElement = (E) client.execute(null, this.key, "queue", "peek", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, "queue", "peek", Value.get(this.binName));
 		if (topElement == null)
 			throw new NoSuchElementException();
 		return topElement;
@@ -188,9 +178,7 @@ public class LDTQueue<E> implements Queue<E>{
 
 	@Override
 	public E peek() {
-		long top = getTop();
-		E topElement = element(top, false);
-//		E topElement = (E) client.execute(null, this.key, "queue", "peek", Value.get(this.binName));
+		E topElement = (E) client.execute(null, this.key, "queue", "peek", Value.get(this.binName));
 		return topElement;
 
 	}
