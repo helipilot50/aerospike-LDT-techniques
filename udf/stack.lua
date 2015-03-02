@@ -66,8 +66,8 @@ function clear(rec, bin)
 end
 
 function push(rec, bin, item)
-  local tail = next(rec, LDT_TOP)
-  local value = makeMap(tail, item)
+  local top = next(rec, LDT_TOP)
+  local value = makeMap(top, item)
   llist.add(rec, bin, value)
 end
 

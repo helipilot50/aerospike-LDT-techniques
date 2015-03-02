@@ -24,7 +24,7 @@ The Large List is particularly suited for storing any type of ordered data, eith
 One of the really neat features of a LList is enabled when the element to be store is a Map. If the map has a key named “key”, the LList is ordered by the the value referenced by “key”. If the key is a numeric index, you can reference the elements by number <Raj check this>.  If the key is set as a timestamp it becomes time series collection.
 
 
-### LLIst Features:
+### LList Features:
 Atomic or Complex object management
 Infinite Storage
 UDF Predicate Filters
@@ -62,7 +62,7 @@ The test suite AllTests will run as when you issue the Maven command above.
 While the classes are packaged as a library, their code is deliberately independent of each other to enable the use of a class without dependencies and to verbosely illustrate the code without the complexity of inheritance or aggregation.
 
 ## Using a Large List as a Map
-Using a LList as a Map is dead easy, essentially because it is a large sorted map. Most of the work in the LDTMap class is make the LList functionality plug compatible with the Java Map interface.
+Using a LList as a Map is dead easy, essentially because it is a large sorted map. Most of the work in the LDTMap class is make the LList functionality plug compatible with the Java Map interface, by wrapping the llist API.
 
 Let’s examine implementation of the `get()` method, and all it's supporting code.
 
@@ -109,15 +109,47 @@ You can see that we make a `Map` and a `Value` from the key passed into the `get
 
 
 ## Using a Large List as a Stack
-A stack is a Last In First Out (LIFO) data structure.
+A stack is a Last In First Out (LIFO) data structure. Essentially a stack needs a  counter as key, in increases on push and decreases on pop. Aerospike has support for counters by using an Integer Bin. When the stack has no elements the counter is zero. 
 
-Lstack needs a key such that all the insert order is the data order. So what we need is increasing counter as key.
-Lstack == llistbin + counter (starting at 0)
-Push would push 0:v0, 1:v1... Counter++
-Peek would peek n items range(counter-n, counter)
-Pop would peek + remove range(counter-n, counter) counter-=n
+On a push operation, the counter is incremented and the value of the counter becomes the key for the new element.
 
-Using a Large List as a Queue
+On a pop operation, the element is removed from the llist using the current value of the counter, the counter is decremented, and the value is returned to the client application.
+
+For this to work, the counter operations and the llist operations need to be atomic, this is best done using a User Defined Function ([UDF](http://www.aerospike.com/docs/udf/udf_guide.html)). Located in the `udf` subdirectory is the UDF module: `stack.lua`. Each function represents a stack operation callable from the client. The counter is maintained in the Bin "ldt-top". This UDF module must be registered with the cluster before is available for use. 
+
+The Java class `LDTStack` subclasses the Java Stack class, and overrides the methods to provide a new implementation using an llist. Each method calls a UDF using the Aerospike client API. 
+
+
+As and example, let's consider how `push()` is implemented.
+
+This is the push() method in Java
+```java
+	@Override
+	public synchronized E push(E item) {
+		client.execute(null, this.key, 
+				STACK_MODULE, "push", 
+				Value.get(this.binName), Value.get(item));
+		return item;
+	}
+```
+As you can see, the `execute()` method is passed the record key, module name and function, bin name and the item to be pushed onto the stack. All the hard work of the `push` operation is done in the UDF.
+
+Here is the UDF that implements the `push` operation.
+```lua
+function push(rec, bin, item)
+  local top = next(rec, LDT_TOP)
+  local value = makeMap(top, item)
+  llist.add(rec, bin, value)
+end
+```
+In the first line, a function `next(...)` is called to increment the counter in the `ldt-top` Bin. Then a single element `map` is constructed using the value of `top` as the key and `item` as the value. Finally the `add` function is called on the llist to add the new value. 
+
+Because the new value's he is the largest number, it is the top of the stack. The counter and llist are updated atomically.
+
+The `pop` operation is the inverse of `push`. 
+
+
+## Using a Large List as a Queue
 Queue also can be implemented on similar lines  scounter, ecounter
 ..and such...
 

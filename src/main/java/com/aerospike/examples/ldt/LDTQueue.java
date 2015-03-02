@@ -29,7 +29,6 @@ public class LDTQueue<E> implements Queue<E>{
 	private LargeList getList(){
 		if (llist == null){
 			llist = this.client.getLargeList(null, key, binName, null);
-			this.client.put(null, this.key, new Bin(Utils.LDT_TOP, 1));
 		}
 		return llist;
 	}
@@ -129,19 +128,6 @@ public class LDTQueue<E> implements Queue<E>{
 		return topElement;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private E element(long top, boolean remove){
-		if (top == 0)
-			return null;
-		Value topValue = Utils.makeKeyAsValue(top);
-		E topElement = (E) Utils.findElement(getList(), topValue);
-		if (topElement != null && remove){
-			getList().remove(Utils.makeKeyAsValue(top));
-			this.client.add(null, this.key, new Bin(Utils.LDT_TOP, 1));
-		}
-		return topElement;
-		
-	}
 
 	@Override
 	public E element() {
