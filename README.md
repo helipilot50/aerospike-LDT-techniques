@@ -122,7 +122,7 @@ The Java class `LDTStack` subclasses the Java Stack class, and overrides the met
 
 As and example, let's consider how `push()` is implemented.
 
-This is the push() method in Java
+This is the `push()` method in Java
 ```java
 	@Override
 	public synchronized E push(E item) {
@@ -150,8 +150,47 @@ The `pop` operation is the inverse of `push`.
 
 
 ## Using a Large List as a Queue
-Queue also can be implemented on similar lines  scounter, ecounter
-..and such...
+A Queue is a First In First Out data structure (FIFO). A Queue also can be implemented on similar lines to a stack, the difference being that you need a counter for the head of the queue and also one for the tail of the queue.
+The counters need to be updated atomically with the operations, so a UDF is the way to do this.
 
+When an element is added to the tail of the queue the `tail` counter is incremented. When an element is removed from the head of the queue the `head` counter is incremented. When the `head` counter is greater than the `tail` counter, the queue is empty and both counters can be reset to zero.
+
+Located in the `udf` subdirectory is the UDF module: `queue.lua`. Each function represents a queue operation callable from the client. The tail counter is maintained in the Bin "ldt-tail" and the head counter is maintained in the Bin "ldt-top". This UDF module must be registered with the cluster before is available for use. 
+
+The Java class LDTQueue implements the Java Queue interface, and implements the methods using an llist. Each method calls a UDF using the Aerospike client API.
+
+
+Let's consider how `add()` is implemented.
+
+This is the `add()` method in Java.
+```java
+	@Override
+	public boolean add(E e) {
+		client.execute(null, this.key, 
+		QUEUE_MODULE, "add", 
+		Value.get(this.binName), Value.get(e));
+		return true;
+	}
+```
+Similar to our previous example, you can see, the `execute()` method is passed the record key, module name and function, bin name and the item to be added onto the queue. All the hard work of the `add` operation is done in the UDF.
+
+Here is the UDF that implements the `add` operation.
+```lua
+function add(rec, bin, item)
+  local top = rec[LDT_TOP] or 0
+  if top == 0 then
+    next(rec, LDT_TOP)
+  end
+  local tail = next(rec, LDT_TAIL)
+  local value = makeMap(tail, item)
+  llist.add(rec, bin, value)
+end
+```
+In the first line we get the head of the queue, in increment it if it is zero. then we get the next tail and add the element to the llist using a single element `map` constructed with the value of `top` as the key and `item` as the value. 
+
+Naturally, the `remove` operation uses the head of the queue and is almost the inverse of `add`.
+
+# Conclusion
+Aerospike Large Ordered Lists are very versatile and with a little bought can be applied to implement many collections. The collections can be huge with billions of elements, they are atomic and perform at Aerospike scale, speed and reliability.
 
 
