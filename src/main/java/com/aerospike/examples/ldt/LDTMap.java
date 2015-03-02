@@ -2,6 +2,7 @@ package com.aerospike.examples.ldt;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ import com.aerospike.client.large.LargeList;
 @author Peter Milne
 */
 public class LDTMap<K,V> implements Map<K,V>{
+	private static final String LDT_KEY = "key";
+	private static final String LDT_VALUE = "value";
 	private AerospikeClient client;
 	private Key key;
 	LargeList llist;
@@ -34,20 +37,42 @@ public class LDTMap<K,V> implements Map<K,V>{
 			llist = this.client.getLargeList(null, key, binName, null);
 		return llist;
 	}
+	private Map<String, Object> makeKeyMap(Object key){
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put(LDT_KEY, key);
+		return map;
+	}
+	
+	private Map<String, Object> makeValueMap(Object key, Object value){
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put(LDT_KEY, key);
+		map.put(LDT_VALUE, value);
+		return map;
+	}
+	private Value makeValue(Object key, Object value){
+		return Value.getAsMap(makeValueMap(key, value));
+	}
 	
 	@Override
 	public int size() {
-		return Utils.size(getList());
+		int size = 0;
+		try {
+			size = getList().size();
+		} catch (AerospikeException e){
+			if (e.getResultCode() != 1417) // LDT-Bin Does Not Exist
+				throw e;
+		}
+		return size;
 	}
 	
 	@Override
 	public boolean isEmpty() {
-		return getList().size() == 0;
+		return size() == 0;
 	}
 	
 	@Override
 	public boolean containsKey(Object key) {
-		return getList().find(Utils.makeKeyAsValue(key)) != null;
+		return getList().find(Value.getAsMap(makeKeyMap(key))) != null;
 	}
 	
 	@Override
@@ -59,12 +84,16 @@ public class LDTMap<K,V> implements Map<K,V>{
 	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key) {
-		return (V) Utils.findElement(getList(), Utils.makeKeyAsValue(key));
+		List<Map<String, Object>> list = (List<Map<String, Object>>) getList().find(Value.getAsMap(makeKeyMap(key)));
+		Object element = null;
+		if (list != null && list.size() > 0)
+			element = ((Map<String, ?>)list.get(0)).get(LDT_VALUE);
+		return (V) element;
 	}
 	
 	@Override
 	public V put(Object key, Object value) {
-		getList().update(Utils.makeValue(key, value));
+		getList().update(makeValue(key, value));
 		return null;
 	}
 	
@@ -114,7 +143,7 @@ public class LDTMap<K,V> implements Map<K,V>{
 		List<Map<K, V>> result = (List<Map<K, V>>) getList().scan();
 		List<V> values = new ArrayList<V>();
 		for (Map<K, V> e : result) {
-			V value = e.get(Utils.LDT_VALUE);
+			V value = e.get(LDT_VALUE);
 			values.add(value);
 		}
 		result.clear();

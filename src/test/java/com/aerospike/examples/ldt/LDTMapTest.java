@@ -6,6 +6,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +15,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
 
 public class LDTMapTest {
-
+	public static final Logger LOG = Logger.getLogger(LDTMapTest.class);
 	AerospikeClient client;
 	Key key;
 	LDTMap<String, Long> subject;
@@ -63,7 +64,7 @@ public class LDTMapTest {
 		subject.put("birds", 23);
 		Set<Entry<String, Long>> set = subject.entrySet();
 		Assert.assertEquals(7, set.size());
-		System.out.println(set);
+		LOG.info(set);
 	}
 	@Test
 	public void testValues() throws Exception {
@@ -76,7 +77,7 @@ public class LDTMapTest {
 		subject.put("birds", 23);
 		Collection<Long> values = subject.values();
 		Assert.assertEquals(7, values.size());
-		System.out.println(values);
+		LOG.info(values);
 	}
 
 }

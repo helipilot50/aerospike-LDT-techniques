@@ -2,6 +2,7 @@ package com.aerospike.examples.ldt;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
 
 public class LDTStackTest {
+	public static final Logger LOG = Logger.getLogger(LDTStackTest.class);
 	AerospikeClient client;
 	Key key;
 	LDTStack<String> subject;

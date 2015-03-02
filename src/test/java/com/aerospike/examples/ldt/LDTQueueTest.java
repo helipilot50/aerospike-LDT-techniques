@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
 
 public class LDTQueueTest {
+	public static final Logger LOG = Logger.getLogger(LDTQueueTest.class);
 	AerospikeClient client;
 	Key key;
 	LDTQueue<String> subject;
