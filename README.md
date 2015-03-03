@@ -21,20 +21,20 @@ The most versatile of LDTs is the Large Ordered List, or LList for short.  LList
 
 The Large List is particularly suited for storing any type of ordered data, either simple values (numbers, string) or complex objects (lists, maps, documents). If the object being stored does not implicitly have an atomic value that can be compared (and thus ordered). 
 
-One of the really neat features of a LList is enabled when the element to be store is a Map. If the map has a key named “key”, the LList is ordered by the the value referenced by “key”. If the key is a numeric index, you can reference the elements by number <Raj check this>.  If the key is set as a timestamp it becomes time series collection.
+One of the really neat features of a LList is enabled when the element to be store is a Map. If the map has a key named “key”, the LList is ordered by the the value referenced by “key”. If the key is a numeric index, you can reference the elements by number.  If the key is set as a timestamp it becomes time series collection.
 
 
 ### LList Features:
-Atomic or Complex object management
-Infinite Storage
-UDF Predicate Filters
-Single-item or multi-item insert
-Single-value search, with optional UDF filter
-Range value search, with optional UDF filter
-Full scan, with optional UDF filter
-Single-item Update
-Min and Max search
-Single-Value Delete
+- Atomic or Complex object management
+- Infinite Storage
+- UDF Predicate Filters
+- Single-item or multi-item insert
+- Single-value search, with optional UDF filter
+- Range value search, with optional UDF filter
+- Full scan, with optional UDF filter
+- Single-item Update
+- Min and Max search
+- Single-Value Delete
 
 ## Example code
 Code examples for implementing the following  collections can be found at:
@@ -144,7 +144,7 @@ end
 ```
 In the first line, a function `next(...)` is called to increment the counter in the `ldt-top` Bin. Then a single element `map` is constructed using the value of `top` as the key and `item` as the value. Finally the `add` function is called on the llist to add the new value. 
 
-Because the new value's he is the largest number, it is the top of the stack. The counter and llist are updated atomically.
+Because the new value is the largest number, it is the top of the stack. The counter and llist are updated atomically.
 
 The `pop` operation is the inverse of `push`. 
 
