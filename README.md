@@ -62,7 +62,11 @@ The test suite AllTests will run as when you issue the Maven command above.
 While the classes are packaged as a library, their code is deliberately independent of each other to enable the use of a class without dependencies and to verbosely illustrate the code without the complexity of inheritance or aggregation.
 
 ## Using a Large List as a Map
-Using a LList as a Map is dead easy, essentially because it is a large sorted map. Most of the work in the LDTMap class is make the LList functionality plug compatible with the Java Map interface, by wrapping the llist API.
+Using a LList as a Map is dead easy, essentially because it is a large sorted map. 
+
+![Llist as a Map](Llist_map.png)
+
+Most of the work in the LDTMap class is make the LList functionality plug compatible with the Java Map interface, by wrapping the llist API.
 
 Let’s examine implementation of the `get()` method, and all it's supporting code.
 
@@ -109,7 +113,11 @@ You can see that we make a `Map` and a `Value` from the key passed into the `get
 
 
 ## Using a Large List as a Stack
-A stack is a Last In First Out (LIFO) data structure. Essentially a stack needs a  counter as key, in increases on push and decreases on pop. Aerospike has support for counters by using an Integer Bin. When the stack has no elements the counter is zero. 
+A stack is a Last In First Out (LIFO) data structure. Essentially a stack needs a  counter as key, in increases on push and decreases on pop. Aerospike has support for counters by using an Integer Bin. 
+
+![Llist as a stack](Llist_stack.png)
+
+When the stack has no elements the counter is zero. 
 
 On a push operation, the counter is incremented and the value of the counter becomes the key for the new element.
 
@@ -151,6 +159,9 @@ The `pop` operation is the inverse of `push`.
 
 ## Using a Large List as a Queue
 A Queue is a First In First Out data structure (FIFO). A Queue also can be implemented on similar lines to a stack, the difference being that you need a counter for the head of the queue and also one for the tail of the queue.
+
+![Llist as a Queue](Llist_queue.png)
+
 The counters need to be updated atomically with the operations, so a UDF is the way to do this.
 
 When an element is added to the tail of the queue the `tail` counter is incremented. When an element is removed from the head of the queue the `head` counter is incremented. When the `head` counter is greater than the `tail` counter, the queue is empty and both counters can be reset to zero.
