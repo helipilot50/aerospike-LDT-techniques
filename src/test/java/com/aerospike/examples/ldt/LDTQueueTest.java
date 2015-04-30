@@ -1,5 +1,9 @@
 package com.aerospike.examples.ldt;
 
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import junit.framework.Assert;
@@ -11,6 +15,7 @@ import org.junit.Test;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
+import com.aerospike.client.Value;
 
 public class LDTQueueTest {
 	public static final Logger LOG = Logger.getLogger(LDTQueueTest.class);
@@ -30,6 +35,7 @@ public class LDTQueueTest {
 	public void tearDown() throws Exception {
 		client.close();
 	}
+	
 
 	@Test
 	public void testAdd() throws Exception {
