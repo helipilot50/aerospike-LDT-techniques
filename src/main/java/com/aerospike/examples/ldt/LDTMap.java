@@ -34,7 +34,7 @@ public class LDTMap<K,V> implements Map<K,V>{
 	
 	private LargeList getList(){
 		if (llist == null)
-			llist = this.client.getLargeList(null, key, binName, null);
+			llist = this.client.getLargeList(null, key, binName);
 		return llist;
 	}
 	private Map<String, Object> makeKeyMap(Object key){
@@ -50,7 +50,7 @@ public class LDTMap<K,V> implements Map<K,V>{
 		return map;
 	}
 	private Value makeValue(Object key, Object value){
-		return Value.getAsMap(makeValueMap(key, value));
+		return Value.get(makeValueMap(key, value));
 	}
 	
 	@Override
@@ -72,7 +72,7 @@ public class LDTMap<K,V> implements Map<K,V>{
 	
 	@Override
 	public boolean containsKey(Object key) {
-		return getList().find(Value.getAsMap(makeKeyMap(key))) != null;
+		return getList().find(Value.get(makeKeyMap(key))) != null;
 	}
 	
 	@Override
@@ -84,7 +84,7 @@ public class LDTMap<K,V> implements Map<K,V>{
 	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key) {
-		List<Map<String, Object>> list = (List<Map<String, Object>>) getList().find(Value.getAsMap(makeKeyMap(key)));
+		List<Map<String, Object>> list = (List<Map<String, Object>>) getList().find(Value.get(makeKeyMap(key)));
 		Object element = null;
 		if (list != null && list.size() > 0)
 			element = ((Map<String, ?>)list.get(0)).get(LDT_VALUE);
