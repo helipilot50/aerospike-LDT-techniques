@@ -202,6 +202,6 @@ In the first line we get the head of the queue, in increment it if it is zero. t
 Naturally, the `remove` operation uses the head of the queue and is almost the inverse of `add`.
 
 # Conclusion
-Aerospike Large Ordered Lists are very versatile and with a little bought can be applied to implement many collections. The collections can be huge with billions of elements, they are atomic and perform at Aerospike scale, speed and reliability.
+Aerospike Large Ordered Lists are very versatile and with a little thought can be applied to implement many collections. The collections can be huge with billions of elements and they are atomic.
 
 
