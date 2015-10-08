@@ -1,4 +1,3 @@
---require("debugger")("127.0.0.1", 10001)
 local llist = require('ldt/lib_llist');
 
 local LDT_TOP = "ldt-top"
