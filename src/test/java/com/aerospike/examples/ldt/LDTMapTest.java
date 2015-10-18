@@ -29,9 +29,12 @@ import org.junit.Test;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
+import com.aerospike.client.Log;
+import com.aerospike.client.Log.Callback;
+import com.aerospike.client.Log.Level;
 
 public class LDTMapTest {
-	public static final Logger LOG = Logger.getLogger(LDTMapTest.class);
+	public static final Logger log = Logger.getLogger(LDTMapTest.class);
 	AerospikeClient client;
 	Key key;
 	LDTMap<String, Long> subject;
@@ -39,6 +42,27 @@ public class LDTMapTest {
 	@Before
 	public void setUp() throws Exception {
 		client = new AerospikeClient("localhost", 3000);
+		Log.setCallback(new Callback() {
+			
+			@Override
+			public void log(Level level, String message) {
+				switch (level){
+				case INFO:
+					log.info(message);
+					break;
+				case WARN:
+					log.warn(message);
+					break;
+				case DEBUG:
+					log.debug(message);
+					break;
+				case ERROR:
+					log.error(message);
+					break;
+				}
+				
+			}
+		});
 		key = new Key("test", "demo", "the-map-001");
 		client.delete(null, key);
 		subject = new LDTMap<String, Long>(client, key, "the-map");
@@ -80,7 +104,7 @@ public class LDTMapTest {
 		subject.put("birds", 23);
 		Set<Entry<String, Long>> set = subject.entrySet();
 		Assert.assertEquals(7, set.size());
-		LOG.info(set);
+		log.info(set);
 	}
 	@Test
 	public void testValues() throws Exception {
@@ -93,7 +117,7 @@ public class LDTMapTest {
 		subject.put("birds", 23);
 		Collection<Long> values = subject.values();
 		Assert.assertEquals(7, values.size());
-		LOG.info(values);
+		log.info(values);
 	}
 
 }

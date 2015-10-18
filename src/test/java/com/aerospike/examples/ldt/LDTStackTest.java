@@ -25,9 +25,12 @@ import org.junit.Test;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
+import com.aerospike.client.Log;
+import com.aerospike.client.Log.Callback;
+import com.aerospike.client.Log.Level;
 
 public class LDTStackTest {
-	public static final Logger LOG = Logger.getLogger(LDTStackTest.class);
+	public static final Logger log = Logger.getLogger(LDTStackTest.class);
 	AerospikeClient client;
 	Key key;
 	LDTStack<String> subject;
@@ -35,6 +38,27 @@ public class LDTStackTest {
 	@Before
 	public void setUp() throws Exception {
 		client = new AerospikeClient("localhost", 3000);
+		Log.setCallback(new Callback() {
+			
+			@Override
+			public void log(Level level, String message) {
+				switch (level){
+				case INFO:
+					log.info(message);
+					break;
+				case WARN:
+					log.warn(message);
+					break;
+				case DEBUG:
+					log.debug(message);
+					break;
+				case ERROR:
+					log.error(message);
+					break;
+				}
+				
+			}
+		});
 		key = new Key("test", "demo", "the-stack-001");
 		client.delete(null, key);
 		subject = new LDTStack<String>(client, key, "the-stack");

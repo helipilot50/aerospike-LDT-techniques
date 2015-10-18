@@ -16,10 +16,6 @@
  */
 package com.aerospike.examples.ldt;
 
-import java.util.List;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import junit.framework.Assert;
@@ -31,10 +27,12 @@ import org.junit.Test;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
-import com.aerospike.client.Value;
+import com.aerospike.client.Log;
+import com.aerospike.client.Log.Callback;
+import com.aerospike.client.Log.Level;
 
 public class LDTQueueTest {
-	public static final Logger LOG = Logger.getLogger(LDTQueueTest.class);
+	public static final Logger log = Logger.getLogger(LDTQueueTest.class);
 	AerospikeClient client;
 	Key key;
 	LDTQueue<String> subject;
@@ -42,6 +40,27 @@ public class LDTQueueTest {
 	@Before
 	public void setUp() throws Exception {
 		client = new AerospikeClient("localhost", 3000);
+		Log.setCallback(new Callback() {
+			
+			@Override
+			public void log(Level level, String message) {
+				switch (level){
+				case INFO:
+					log.info(message);
+					break;
+				case WARN:
+					log.warn(message);
+					break;
+				case DEBUG:
+					log.debug(message);
+					break;
+				case ERROR:
+					log.error(message);
+					break;
+				}
+				
+			}
+		});
 		key = new Key("test", "demo", "the-queue-001");
 		client.delete(null, key);
 		subject = new LDTQueue<String>(client, key, "the-queue");

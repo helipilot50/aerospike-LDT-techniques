@@ -32,6 +32,9 @@ local function find(rec, bin, key)
   local keyMap = makeKeyMap(key)
   local result = llist.find(rec, bin, keyMap)
   local firstElement = result[1]
+  if firstElement == nil then 
+    return nil
+  end
   return firstElement[LDT_VALUE]
 end
 
@@ -52,6 +55,10 @@ function remove(rec, bin)
   end
   --info("Top "..tostring(top))
   local result = find(rec, bin, top)
+  if result == nil  then
+    return nil
+  end
+  
   llist.remove(rec, bin, makeKeyMap(top))
   next(rec, LDT_TOP)
   return result
